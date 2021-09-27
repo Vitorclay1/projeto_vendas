@@ -1,0 +1,67 @@
+from PyQt5 import  uic,QtWidgets
+import pyodbc
+
+dados_conexao = (
+    "Driver={SQL Server};"
+    "Server=VITOR-CLAY;"
+    "Database=caritas;"
+)
+conexao = pyodbc.connect(dados_conexao)
+
+def funcao_principal():
+    linha1 = formulario.lineEdit.text()
+    linha2 = formulario.lineEdit_5.text()
+    linha3 = formulario.lineEdit_4.text()
+    
+    categoria = ""
+
+    if formulario.radioButton_3.isChecked() :
+        categoria = "Eletronicos"
+        print("Categoria Eletronicos selecionada")
+        
+    elif formulario.radioButton_2.isChecked() :
+
+        categoria = "Informatica"
+        print("Categoria Informatica selecionada")
+
+    else :
+        categoria = "Alimentos"
+        print("Categoria Alimentos selecionada")
+
+    print("Código:",linha1)
+    print("Descricao:",linha2)
+    print("Preco",linha3)
+    
+    cursor = conexao.cursor()
+    
+    cadastrar = f"INSERT INTO Vendas(codigo, descricao, preco, categoria) VALUES ({linha1},'{linha2}','{linha3}','{categoria}')"
+    cursor.execute(cadastrar)
+    cursor.commit()
+    formulario.lineEdit.setText('')
+    formulario.lineEdit_4.setText('')
+    formulario.lineEdit_5.setText('')
+
+def chama_segunda_tela():
+    segunda_tela.show()
+
+    cursor = conexao.cursor()
+    comando_SQL = "SELECT * FROM produtos"
+    cursor.execute(comando_SQL)
+    dados_lidos = cursor.fetchall()
+
+    segunda_tela.tableWidget.setRowCount(len(dados_lidos))
+    segunda_tela.tableWidget.setColumnCount(5)
+
+    for i in range(0, len(dados_lidos)):
+        for j in range(0, 5):
+           segunda_tela.tableWidget.setItem(i,j,QtWidgets.QTableWidgetItem(str(dados_lidos[i][j]))) 
+
+app=QtWidgets.QApplication([])
+formulario=uic.loadUi("formulario.ui")
+segunda_tela=uic.loadUi("listar_dados.ui")
+formulario.pushButton.clicked.connect(funcao_principal)
+formulario.pushButton_2.clicked.connect(chama_segunda_tela)
+
+
+formulario.show()
+app.exec()
